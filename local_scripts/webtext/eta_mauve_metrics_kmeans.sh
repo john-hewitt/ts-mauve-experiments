@@ -33,18 +33,20 @@ discretization="kmeans_l2"
 kmeans_num_clusters=500
 
 #for max_len in 1024 512 256 128
-for max_len in 1024 #512 256 128
+#for max_len in 1024 #512 256 128
+for max_len in 512  #1024 512 256 128
 do
 #for generate_seed in 10 11 12 13 14 15
 #for generate_seed in 0 1 2 3 4 5
 #for generate_seed in 100 101 102 103 104
-for generate_seed in 202 203
+#for generate_seed in 200 201 202 203 204
+for generate_seed in 200 201 202 203 204 0 1 2 3 4 5
 #for generate_seed in 3 4 5
 do
 #for model_name in "gpt2" "gpt2-medium" "gpt2-large" "gpt2-xl"
 #for model_name in "gpt2" "gpt2-medium" "gpt2-large"
 #for model_name in "gpt2-xl" "gpt2-large"
-for model_name in "gpt2"
+for model_name in "gpt2" "gpt2-medium" "gpt2-large" "gpt2-xl"
 do
 
 args="  --data_dir ${data_dir} --model_name ${model_name} "
@@ -61,18 +63,18 @@ options="${options} --use_large_feats --max_len ${max_len} --kmeans_explained_va
 # epsilon
 #for e in 0.00005 0.0001 0.0003 0.0006 0.0009
 #for e in 5e-5 2e-5 5e-6 1e-6
-for e in 6e-5 3e-5 8e-6 3e-6
+for e in 0.004 0.002 0.0009 0.0006 0.0003
 do
     cmds="$cmds ; time python -u compute_mauve_metrics.py ${options} --generation_type basic --epsilon ${e} > outputs/${dataset}_${model_name}/outs/basic/${datasplit}_mauve_${sn}_e_${e}_seed${generate_seed} 2>&1 "
 done
 
 # nucleus
-#for p in 0.9 0.92 0.95 0.99
+for p in 0.89 0.9 0.92 0.95 0.99
 #for p in 0.89
 #for p in 0.9 0.905 0.91 0.92 0.925 0.93 0.935 0.94 0.945 0.95 0.955 0.96 0.965 0.97 0.975 0.98 0.985 0.99 0.995
-#do
-#    cmds="$cmds ; time python -u compute_mauve_metrics.py ${options} --generation_type basic --top_p ${p} > outputs/${dataset}_${model_name}/outs/basic/${datasplit}_mauve_${sn}_p_${p}_seed${generate_seed} 2>&1 "
-#done
+do
+    cmds="$cmds ; time python -u compute_mauve_metrics.py ${options} --generation_type basic --top_p ${p} > outputs/${dataset}_${model_name}/outs/basic/${datasplit}_mauve_${sn}_p_${p}_seed${generate_seed} 2>&1 "
+done
 
 ## top-k
 #for k in 1

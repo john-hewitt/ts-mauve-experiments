@@ -19,7 +19,7 @@ if __name__ == '__main__':
     subdir = subdir.replace('\\','/') # needed for Windows
 
     for ds in ['webtext']:
-        for split in ['test']:
+        for split in ['test', 'valid']:
             filename = ds + "." + split + '.jsonl'
             r = requests.get(DATA_URL + filename, stream=True)
 

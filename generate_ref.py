@@ -25,6 +25,7 @@ if __name__ == '__main__':
 
     device = utils.get_device_from_arg(args.device)
     print(f'Using device: {device}')
+    print('Folder name', folder_name)
 
 
     ###### OLD
@@ -41,6 +42,7 @@ if __name__ == '__main__':
         for l in {128, 256, 512, args.max_len}:
             feats_prefix = f'L{l}'
             feats_out_fn = f'{folder_name}/feats{feats_prefix}_{name}.pt'
+            print('Feats location', feats_out_fn)
             if os.path.isfile(feats_out_fn):
                 print(f'Feats {feats_out_fn} exisits. Skipping')
                 continue
