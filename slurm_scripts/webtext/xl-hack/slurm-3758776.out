@@ -1,0 +1,7 @@
+--top_p 1 --top_k 0 --temp 1 --seed 200 --epsilon 0 --eta 0.0003
+python: can't open file 'generate_basic.py': [Errno 2] No such file or directory
+
+real	0m0.387s
+user	0m0.020s
+sys	0m0.008s
+Job completed at Wed 11 May 2022 02:58:13 AM PDT

@@ -18,7 +18,7 @@ eta_seeds_valid = (200, 201, 202, 203, 204)
 
 lengths = (128, 256, 512, 1024)
 
-path = 'outputs/webtext_gpt2{}/metrics/basic/mauve_L{}_valid_p{}_k0_t1.0_e{}_seed{}_kmeans_l2_500_0.9.p'
+path = 'outputs/webtext_gpt2{}/metrics/basic/mauve_L{}_valid_p{}_k0_t1.0_e{}_h{}_seed{}_kmeans_l2_500_0.9.p'
 
 
 def results_helper(hyps, seeds, typ):
@@ -27,17 +27,17 @@ def results_helper(hyps, seeds, typ):
     for seed in seeds:
       try:
         if typ == 'p':
-          resolved_path = path.format(model_size, length, hyp, 0.0, seed)
+          resolved_path = path.format(model_size, length, hyp, 0.0, 0.0, seed)
         elif  typ == 'e':
-          resolved_path = path.format(model_size, length, 1.0, hyp, seed)
+          resolved_path = path.format(model_size, length, 1.0, hyp, 0.0, seed)
         elif typ == 'h':
-          resolved_path = path.format(model_size, length, 1.0, hyp, seed)
+          resolved_path = path.format(model_size, length, 1.0, 0.0, hyp, seed)
         result = pickle.load(open(resolved_path, 'rb'))[0]
         results[hyp].append(result)
       except:
         pass
   #print(results)
-  results = {hyp: (np.mean(results[hyp]), np.std(results[hyp]), len(results[hyp])) for hyp in results}
+  results = {hyp: (round(np.mean(results[hyp]),4), np.std(results[hyp]), len(results[hyp])) for hyp in results}
   if args.just_best:
     print(list(sorted(results.items(), key=lambda x: 100 if np.isnan(x[1][0]) else -x[1][0]))[0])
   else:

@@ -4,7 +4,7 @@
 
 #SBATCH --job-name=gen_basic
 #SBATCH --comment="Generate all baselines"
-#SBATCH --array=0-25%5
+#SBATCH --array=0-27%5
 #SBATCH --output=TODO
 #SBATCH --nodes=1
 #SBATCH --partition jag-standard
@@ -86,27 +86,26 @@ do
 for datasplit in valid
 do
 
-# epsilon
-for e in 0.0001 0.0003 0.0006 0.0009 0.001
+## epsilon
+#for e in 0.0001 0.0003 0.0006 0.0009
+#do
+#    p=1
+#    k=0
+#    t=1
+#    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e}"
+#    list_of_jobs+=("${job}")
+#done
+
+# nucleus
+for p in 0.89 0.9 0.92 0.95 0.99
 do
-    p=1
     k=0
     t=1
+    e=0
     h=0
     job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e} --eta ${h}"
     list_of_jobs+=("${job}")
 done
-
-# nucleus
-#for p in 0.9 0.92 0.95
-#for p in 0.89 
-#do
-#    k=0
-#    t=1
-#    e=0
-#    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e}"
-#    list_of_jobs+=("${job}")
-#done
 
 # top-k
 #for k in 1 5 10 50 100 500 1000 2000 5000 1000

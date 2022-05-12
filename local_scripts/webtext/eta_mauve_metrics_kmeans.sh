@@ -34,7 +34,7 @@ kmeans_num_clusters=500
 
 #for max_len in 1024 512 256 128
 #for max_len in 1024 #512 256 128
-for max_len in 512  #1024 512 256 128
+for max_len in 512 1024 256 128
 do
 #for generate_seed in 10 11 12 13 14 15
 #for generate_seed in 0 1 2 3 4 5
@@ -60,10 +60,18 @@ options="${options} --use_large_feats --max_len ${max_len} --kmeans_explained_va
 ##################
 # basic
 ##################
-# epsilon
-#for e in 0.00005 0.0001 0.0003 0.0006 0.0009
+# eta
+#for e in 0.00005 0.0001 0.0003 0.0006 0.001
 #for e in 5e-5 2e-5 5e-6 1e-6
-for e in 0.004 0.002 0.0009 0.0006 0.0003
+for h in 0.004 0.002 0.0009 0.0006 0.0003
+do
+    cmds="$cmds ; time python -u compute_mauve_metrics.py ${options} --generation_type basic --eta ${h} > outputs/${dataset}_${model_name}/outs/basic/${datasplit}_mauve_${sn}_h_${h}_seed${generate_seed} 2>&1 "
+done
+
+# epsilon
+for e in 0.0001 0.0003 0.0006 0.009 0.001
+#for e in 5e-5 2e-5 5e-6 1e-6
+#for e in 0.004 0.002 0.0009 0.0006 0.0003
 do
     cmds="$cmds ; time python -u compute_mauve_metrics.py ${options} --generation_type basic --epsilon ${e} > outputs/${dataset}_${model_name}/outs/basic/${datasplit}_mauve_${sn}_e_${e}_seed${generate_seed} 2>&1 "
 done

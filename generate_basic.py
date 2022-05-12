@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # check if have to run
     save_directory = f'./outputs/{utils.get_dataset_name_from_datapath(args.data_dir)}_{utils.get_model_basename(args.model_name)}'
-    name = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_seed{args.seed}'
+    name = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_h{args.eta}_seed{args.seed}'
     folder_name = f'{save_directory}/generations/basic'
     if os.path.isfile(f'{folder_name}/feats_{name}.pt'):
         print(f'File: {folder_name}/feats_{name}.pt already exists. Exiting')
@@ -52,7 +52,8 @@ if __name__ == '__main__':
 
         sample_fn = gen_utils.create_sample_fn(model, args.max_len,
             top_p=args.top_p, top_k=args.top_k, temperature=args.temp,
-            epsilon=args.epsilon
+            epsilon=args.epsilon,
+            eta=args.eta
         )
         t1 = time.time()
         samples, is_completed = gen_utils.get_samples_from_sample_fn(

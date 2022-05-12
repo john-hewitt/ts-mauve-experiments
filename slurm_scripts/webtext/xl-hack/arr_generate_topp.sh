@@ -4,10 +4,7 @@
 
 #SBATCH --job-name=gen_basic
 #SBATCH --comment="Generate all baselines"
-#SBATCH --array=0-25%5
-#SBATCH --output=TODO
-#SBATCH --nodes=1
-#SBATCH --partition jag-standard
+#SBATCH --partition jag-important
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=25G
 #SBATCH --gres=gpu:1
@@ -51,11 +48,11 @@ fi
 export DISABLE_TQDM=True
 export TRANSFORMERS_CACHE=/u/scr/nlp/johnhew/data/huggingface
 
-echo "Running [ ${0} ${@} ] on $(hostname), starting at $(date)"
-echo "Job id = ${SLURM_JOB_ID}, task id = ${SLURM_ARRAY_TASK_ID}"
-echo "PWD = $(pwd)"
+#echo "Running [ ${0} ${@} ] on $(hostname), starting at $(date)"
+#echo "Job id = ${SLURM_JOB_ID}, task id = ${SLURM_ARRAY_TASK_ID}"
+#echo "PWD = $(pwd)"
 
-set -exu
+#set -exu
 
 
 model_size=$1  # pass model size as argument
@@ -86,27 +83,26 @@ do
 for datasplit in valid
 do
 
-# epsilon
-for e in 0.0001 0.0003 0.0006 0.0009 0.001
+## epsilon
+#for e in 0.0001 0.0003 0.0006 0.0009
+#do
+#    p=1
+#    k=0
+#    t=1
+#    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e}"
+#    list_of_jobs+=("${job}")
+#done
+
+# nucleus
+for p in 0.89 0.9 0.92 0.95 0.99
 do
-    p=1
     k=0
     t=1
+    e=0
     h=0
     job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e} --eta ${h}"
     list_of_jobs+=("${job}")
 done
-
-# nucleus
-#for p in 0.9 0.92 0.95
-#for p in 0.89 
-#do
-#    k=0
-#    t=1
-#    e=0
-#    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e}"
-#    list_of_jobs+=("${job}")
-#done
 
 # top-k
 #for k in 1 5 10 50 100 500 1000 2000 5000 1000
@@ -144,25 +140,27 @@ done # seed
 
 num_jobs=${#list_of_jobs[@]}
 
-job_id=${SLURM_ARRAY_TASK_ID}
+#job_id=${SLURM_ARRAY_TASK_ID}
 
-if [ ${job_id} -ge ${num_jobs} ] ; then
-    echo "Invalid job id; qutting"
-    exit 2
-fi
+#if [ ${job_id} -ge ${num_jobs} ] ; then
+#    echo "Invalid job id; qutting"
+#    exit 2
+#fi
 
-echo "-------- STARTING JOB ${job_id}/${num_jobs}"
+#echo "-------- STARTING JOB ${job_id}/${num_jobs}"
+job_id=$2
 
 args=${list_of_jobs[${job_id}]}
 
+echo ${args}
 
 time python -u generate_basic.py ${args} \
-    --device 0 \
-    --ds_name webtext \
-    --datasplit ${datasplit} \
-    --data_dir ${data_dir} \
-    --model_name ${model_name} \
-    --prompt_size ${prompt_size} \
-    --use_large_feats
+  --device 0 \
+  --ds_name webtext \
+  --datasplit ${datasplit} \
+  --data_dir ${data_dir} \
+  --model_name ${model_name} \
+  --prompt_size ${prompt_size} \
+  --use_large_feats
 
 echo "Job completed at $(date)"

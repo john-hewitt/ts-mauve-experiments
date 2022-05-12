@@ -31,6 +31,7 @@ def generate_text_from_recalibrated_model(
         top_k: Optional[int] = None,
         top_p: Optional[float] = None,
         epsilon: Optional[float] = None,
+        eta: Optional[float] = None,
         repetition_penalty: Optional[float] = None,
         bad_words_ids: Optional[Iterable[int]] = None,
         bos_token_id: Optional[int] = None,
@@ -271,6 +272,7 @@ def generate_text_from_recalibrated_model(
                                           cur_len=cur_len, max_length=max_length, min_length=min_length,
                                           do_sample=do_sample, temperature=temperature, top_k=top_k, top_p=top_p,
                                           epsilon=epsilon,
+                                          eta=eta,
                                           repetition_penalty=repetition_penalty,
                                           no_repeat_ngram_size=no_repeat_ngram_size, bad_words_ids=bad_words_ids,
                                           pad_token_id=pad_token_id, eos_token_id=eos_token_id,
@@ -284,6 +286,7 @@ def _generate_no_beam_search(model, input_ids,
                              cur_len, max_length, min_length, do_sample,
                              temperature, top_k, top_p,
                              epsilon,
+                             eta,
                              repetition_penalty, no_repeat_ngram_size, bad_words_ids,
                              pad_token_id, eos_token_id, batch_size, attention_mask, use_cache, model_kwargs):
     """Generate sequences for each example without beam search (num_beams == 1).
@@ -332,7 +335,8 @@ def _generate_no_beam_search(model, input_ids,
             next_token_logscores = src.model_utils.my_top_k_top_p_filtering(
                 scores,
                 top_k=top_k, top_p=top_p,
-                epsilon=epsilon)
+                epsilon=epsilon,
+                eta=eta)
             # Sample
             probs = F.softmax(next_token_logscores, dim=-1)
             next_token = torch.multinomial(probs, num_samples=1).squeeze(1)
@@ -403,13 +407,14 @@ def get_default_batch_size(model_name, device, beam_size=1):
 
 def create_sample_fn(model, max_len,
                      top_p=1.0, top_k=0, temperature=1.0,
-                     epsilon=1.0,
+                     epsilon=0.0,
+                     eta=0.0,
                      return_predicted_p=False):
     # recalib_fn is applied after top-p/top-k/temp modifications
     fn = lambda prompt: generate_text_from_recalibrated_model(
         model, input_ids=prompt,
         max_length=max_len, do_sample=True, temperature=temperature, top_k=top_k, top_p=top_p,
-        epsilon=epsilon)
+        epsilon=epsilon, eta=eta)
     return fn
 
 def remove_eos_from_samples(samples, eos_token_id):

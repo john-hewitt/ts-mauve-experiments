@@ -2,19 +2,16 @@
 
 ## TO change: `data_dir` in line 45 and output directory. Pass in model size as argument.
 
+
 #SBATCH --job-name=gen_basic
 #SBATCH --comment="Generate all baselines"
-#SBATCH --array=0-25%5
-#SBATCH --output=TODO
-#SBATCH --nodes=1
-#SBATCH --partition jag-standard
+#SBATCH --partition jag-important
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=25G
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --open-mode=append
 #SBATCH --mail-type=ALL
-
 
 
 # Initialize conda into the right environment + modules.
@@ -51,11 +48,6 @@ fi
 export DISABLE_TQDM=True
 export TRANSFORMERS_CACHE=/u/scr/nlp/johnhew/data/huggingface
 
-echo "Running [ ${0} ${@} ] on $(hostname), starting at $(date)"
-echo "Job id = ${SLURM_JOB_ID}, task id = ${SLURM_ARRAY_TASK_ID}"
-echo "PWD = $(pwd)"
-
-set -exu
 
 
 model_size=$1  # pass model size as argument
@@ -81,18 +73,20 @@ list_of_jobs=()
 
 #for seed in 0 1 2 3 4
 #for seed in 3 4 5
-for seed in 1 2 3 4 5
+#for seed in 0 1 2 3 4
+for seed in 200 201 202 203 204
 do
 for datasplit in valid
 do
 
-# epsilon
-for e in 0.0001 0.0003 0.0006 0.0009 0.001
+## entropy
+#for e in 5e-5 2e-5 5e-6 1e-6
+for h in 0.004 0.002 0.0009 0.0006 0.0003
 do
     p=1
     k=0
     t=1
-    h=0
+    e=0
     job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e} --eta ${h}"
     list_of_jobs+=("${job}")
 done
@@ -142,19 +136,20 @@ done
 done # datasplit
 done # seed
 
-num_jobs=${#list_of_jobs[@]}
+#num_jobs=${#list_of_jobs[@]}
 
-job_id=${SLURM_ARRAY_TASK_ID}
+job_id=$2
 
-if [ ${job_id} -ge ${num_jobs} ] ; then
-    echo "Invalid job id; qutting"
-    exit 2
-fi
+#if [ ${job_id} -ge ${num_jobs} ] ; then
+#    echo "Invalid job id; qutting"
+#    exit 2
+#fi
 
-echo "-------- STARTING JOB ${job_id}/${num_jobs}"
+#echo "-------- STARTING JOB ${job_id}/${num_jobs}"
 
 args=${list_of_jobs[${job_id}]}
 
+echo ${args}
 
 time python -u generate_basic.py ${args} \
     --device 0 \

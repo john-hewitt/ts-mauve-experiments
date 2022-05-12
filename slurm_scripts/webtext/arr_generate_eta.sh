@@ -4,12 +4,12 @@
 
 #SBATCH --job-name=gen_basic
 #SBATCH --comment="Generate all baselines"
-#SBATCH --array=0-25%10
-#SBATCH --output=${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}
+#SBATCH --array=0-25%5
+#SBATCH --output=eta`date`
 #SBATCH --nodes=1
 #SBATCH --partition jag-standard
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=30G
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=25G
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --open-mode=append
@@ -89,12 +89,13 @@ do
 
 ## entropy
 #for e in 5e-5 2e-5 5e-6 1e-6
-for e in 0.004 0.002 0.0009 0.0006 0.0003
+for h in 0.004 0.002 0.0009 0.0006 0.0003
 do
     p=1
     k=0
     t=1
-    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e}"
+    e=0
+    job="--top_p ${p} --top_k ${k} --temp ${t} --seed ${seed} --epsilon ${e} --eta ${h}"
     list_of_jobs+=("${job}")
 done
 

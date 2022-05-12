@@ -34,6 +34,7 @@ def make_basic_parser():
     parser.add_argument('--top_p', type=float, default=1.0)
     parser.add_argument('--top_k', type=int, default=0)
     parser.add_argument('--epsilon', type=float, default=0.0)
+    parser.add_argument('--eta', type=float, default=0.0)
     parser.add_argument('--temp', type=float, default=1.0)
     parser.add_argument('--beam_size', type=int, default=4)
     parser.add_argument('--no_repeat_ngram', type=int, default=0)
@@ -69,6 +70,7 @@ def make_metrics_parser():
     gen_parser.add_argument('--top_k', type=int, default=0)
     gen_parser.add_argument('--top_p', type=float, default=1.0)
     gen_parser.add_argument('--epsilon', type=float, default=0.0)
+    gen_parser.add_argument('--eta', type=float, default=0.0)
     gen_parser.add_argument('--temp', type=float, default=1.0)
     gen_parser.add_argument('--generate_seed', type=int, default=1)
     # beam
@@ -107,7 +109,7 @@ def make_metrics_parser():
 def get_save_filename_from_args(args):
     if args.generation_type == 'basic':
         folder = 'basic'
-        filename = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_seed{args.generate_seed}'
+        filename = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_h{args.eta}_seed{args.generate_seed}'
     elif args.generation_type == 'beam':
         folder = 'beam'
         filename = f'{args.datasplit}_b{args.beam_size}_t{args.temp}_nr{args.no_repeat_ngram}_seed{args.generate_seed}'

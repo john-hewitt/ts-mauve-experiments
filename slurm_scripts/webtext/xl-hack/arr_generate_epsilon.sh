@@ -4,17 +4,13 @@
 
 #SBATCH --job-name=gen_basic
 #SBATCH --comment="Generate all baselines"
-#SBATCH --array=0-25%5
-#SBATCH --output=TODO
-#SBATCH --nodes=1
-#SBATCH --partition jag-standard
+#SBATCH --partition jag-important
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=25G
 #SBATCH --gres=gpu:1
 #SBATCH --time=48:00:00
 #SBATCH --open-mode=append
 #SBATCH --mail-type=ALL
-
 
 
 # Initialize conda into the right environment + modules.
@@ -51,11 +47,11 @@ fi
 export DISABLE_TQDM=True
 export TRANSFORMERS_CACHE=/u/scr/nlp/johnhew/data/huggingface
 
-echo "Running [ ${0} ${@} ] on $(hostname), starting at $(date)"
-echo "Job id = ${SLURM_JOB_ID}, task id = ${SLURM_ARRAY_TASK_ID}"
-echo "PWD = $(pwd)"
-
-set -exu
+#echo "Running [ ${0} ${@} ] on $(hostname), starting at $(date)"
+#echo "Job id = ${SLURM_JOB_ID}, task id = ${SLURM_ARRAY_TASK_ID}"
+#echo "PWD = $(pwd)"
+#
+#set -exu
 
 
 model_size=$1  # pass model size as argument
@@ -142,19 +138,22 @@ done
 done # datasplit
 done # seed
 
-num_jobs=${#list_of_jobs[@]}
+#num_jobs=${#list_of_jobs[@]}
+#
+#job_id=${SLURM_ARRAY_TASK_ID}
 
-job_id=${SLURM_ARRAY_TASK_ID}
+job_id=$2
 
-if [ ${job_id} -ge ${num_jobs} ] ; then
-    echo "Invalid job id; qutting"
-    exit 2
-fi
+#if [ ${job_id} -ge ${num_jobs} ] ; then
+#    echo "Invalid job id; qutting"
+#    exit 2
+#fi
 
 echo "-------- STARTING JOB ${job_id}/${num_jobs}"
 
 args=${list_of_jobs[${job_id}]}
 
+echo ${args}
 
 time python -u generate_basic.py ${args} \
     --device 0 \
