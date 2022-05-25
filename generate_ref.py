@@ -39,7 +39,8 @@ if __name__ == '__main__':
         model, tokenizer = utils.get_model_and_tokenizer(model_name=args.featurize_model_name, device=device)
         ds_tokens = utils.load_and_tokenize_data(tokenizer, args.data_dir, args.max_len, args.max_num_generations,
                                                  ds_name=args.ds_name, split=args.datasplit)
-        for l in {128, 256, 512, args.max_len}:
+        #for l in {128, 256, 512, args.max_len}:
+        for l in {args.max_len,}:
             feats_prefix = f'L{l}'
             feats_out_fn = f'{folder_name}/feats{feats_prefix}_{name}.pt'
             print('Feats location', feats_out_fn)
@@ -49,7 +50,7 @@ if __name__ == '__main__':
             else:
                 print(f'Featurizing l = {l}...')
                 samples_3 = [x[:, :l] for x in ds_tokens]
-                feats = src.model_utils.featurize_sequential(model, samples_3)
+                feats = src.model_utils.featurize_sequential(model, samples_3, min_len=0)
                 torch.save(feats, feats_out_fn)
     else:  # use features from model
         model, tokenizer = utils.get_model_and_tokenizer(model_name=args.model_name, device=device)
