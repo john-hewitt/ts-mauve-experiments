@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # check if have to run
     save_directory = f'./outputs/{utils.get_dataset_name_from_datapath(args.data_dir)}_{utils.get_model_basename(args.model_name)}'
-    name = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_h{args.eta}_seed{args.seed}'
+    name = f'{args.datasplit}_p{args.top_p}_k{args.top_k}_t{args.temp}_e{args.epsilon}_h{args.eta}_typ{args.typ}_seed{args.seed}'
     folder_name = f'{save_directory}/generations/basic'
     if os.path.isfile(f'{folder_name}/feats_{name}.pt'):
         print(f'File: {folder_name}/feats_{name}.pt already exists. Exiting')
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
 
     device = utils.get_device_from_arg(args.device)
-    device = 'cuda'
+    #device = 'cuda'
     print(f'Using device: {device}')
 
     model, tokenizer = utils.get_model_and_tokenizer(model_name=args.model_name, device=device)
@@ -53,6 +53,7 @@ if __name__ == '__main__':
         sample_fn = gen_utils.create_sample_fn(model, args.max_len,
             top_p=args.top_p, top_k=args.top_k, temperature=args.temp,
             epsilon=args.epsilon,
+            typ=args.typ,
             eta=args.eta
         )
         t1 = time.time()
@@ -89,7 +90,8 @@ if __name__ == '__main__':
     if args.use_large_feats:
         del model
         model, _ = utils.get_model_and_tokenizer(model_name=args.featurize_model_name, device=device)
-        for l in {128, 256, 512, args.max_len}:
+        #for l in {128, 256, 512, args.max_len}:
+        for l in {args.max_len,}:
             feats_prefix = f'L{l}'
             feats_out_fn = f'{folder_name}/feats{feats_prefix}_{name}.pt'
             if os.path.isfile(feats_out_fn):
@@ -98,7 +100,7 @@ if __name__ == '__main__':
             else:
                 print(f'Featurizing l = {l}...')
                 samples_3 = [x[:, :l] for x in samples_2]
-                feats = src.model_utils.featurize_sequential(model, samples_3)
+                feats = src.model_utils.featurize_sequential(model, samples_3, min_len=0)
                 torch.save(feats, feats_out_fn)
     else:  # use features from model
         feats = src.model_utils.featurize_sequential(model, samples_2)

@@ -1,4 +1,155 @@
-# mauve-experiments
+# MAUVE experiments for the Truncation Sampling paper
+
+This repository documents the MAUVE experiments in [_Truncation Sampling
+as Language Model Desmoothing_](https://github.com). Minimal changes have been made to the original
+MAUVE experiments repository to add epsilon sampling, eta sampling, and typical
+decoding. A few scripts are provided for running the set of experiments we ran
+as well.
+
+For the rest of the code for the _Trucation Sampling_ paper, please see our
+[github repo](https://github.com/john-hewitt/truncation-sampling).
+
+Of course, if you use this repository, cite the original authors. Only cite the
+_Truncation Sampling_ paper if you use the new methods presented in it.
+
+```
+@article{pillutla-etal:mauve:preprint2021,
+title = {{MAUVE: Human-Machine Divergence Curves for Evaluating Open-Ended Text Generation}},
+author = {Krishna Pillutla and Swabha Swayamdipta and Rowan Zellers and John Thickstun and Yejin Choi and Zaid Harchaoui}
+journal={arXiv preprint},
+year = {2021},
+}
+```
+
+## Running val-set experiments and choosing hyperparameters
+
+We choose hyperparameters for each method on the WebText validation set. You can
+download it (and do other prep for the repository) with the instructions provided
+in the original README, kept verbatim below.
+
+In these and the test experiments, you'll probably want to parallelize these across
+e.g., slurm jobs instead of running them serially.
+```
+model_name=gpt2 # Choose between {gpt2,gpt2-medium,gpt2-large,gpt2-xl}
+
+# Eta-sampling
+for h in 0.0006 0.0009 0.0003 0.002; do
+	for seed in 5 4 3 2 1; do
+		echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $h   --device 1   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;"
+		time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $h   --device 1   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats
+	done
+done
+
+# Epsilon-sampling
+for e in 0.0003 0.0006; do
+	for seed in 5 4 3 2 1; do
+		echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $e --eta 0   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;"
+		time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $e --eta 0   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;
+	done;
+done
+
+# Top-p-sampling
+for p in 0.92 0.95 0.9 0.99; do
+	for seed in 5 4 3 2 1; do
+		echo "time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;"
+		time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;
+	done;
+done
+
+# Typical decoding
+for p in 0.92 0.95 0.9 0.2 0.89; do
+	for seed in 5 4 3 2 1; do
+		echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;"
+		time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p   --device 0   --ds_name webtext   --datasplit valid   --data_dir ./data/webtext/   --model_name $model_name   --prompt_size 35   --use_large_feats;
+	done;
+done
+```
+
+## Running test-set experiments 
+These test set scripts use the best-performing hyperparameters for each method for each model size.
+
+```
+# small
+for seed in 1 2 3 4 5; do
+	eta=0.002
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;
+			
+
+	epsilon=0.0006
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;
+
+	p=0.9
+	echo "time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35   --use_large_feats;
+    
+    p= 0.9
+     echo "python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35 --use_large_feats"
+    python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2   --prompt_size 35 --use_large_feats
+			
+done
+
+# medium
+for seed in 1 2 3 4 5; do
+	eta=0.002
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;
+			
+
+	epsilon=0.0009
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;
+
+	p=0.89
+	echo "time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35   --use_large_feats;
+			
+    p= 0.9
+     echo "python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35 --use_large_feats"
+    python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-medium   --prompt_size 35 --use_large_feats
+done
+
+# large
+for seed in 1 2 3 4 5; do
+	eta=0.0006
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;
+			
+
+	epsilon=0.0003
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;
+
+	p=0.95
+	echo "time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35   --use_large_feats;
+
+    p= 0.92
+     echo "python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35 --use_large_feats"
+    python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-large   --prompt_size 35 --use_large_feats
+done
+
+for seed in 1 2 3 4 5; do
+	eta=0.0003
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta $eta   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;
+			
+
+	epsilon=0.0003
+	echo "time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon $epsilon --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;
+
+	p=0.95
+	echo "time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;"
+	time python -u generate_basic.py --top_p $p --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0   --device 1   --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35   --use_large_feats;
+    
+    p= 0.92
+     echo "python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35 --use_large_feats"
+    python -u generate_basic.py --top_p 1 --top_k 0 --temp 1 --seed $seed --epsilon 0 --eta 0 --typ $p --device 1 --ds_name webtext   --datasplit test   --data_dir ./data/webtext/   --model_name gpt2-xl   --prompt_size 35 --use_large_feats
+```
+
+# mauve-experiments (repeated verbatim from original repository)
 
 This repository contains the code and the scripts to reproduce the experiments 
 [in this paper](https://arxiv.org/pdf/2102.01454.pdf).

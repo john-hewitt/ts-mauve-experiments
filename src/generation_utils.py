@@ -32,6 +32,7 @@ def generate_text_from_recalibrated_model(
         top_p: Optional[float] = None,
         epsilon: Optional[float] = None,
         eta: Optional[float] = None,
+        typ: Optional[float] = None,
         repetition_penalty: Optional[float] = None,
         bad_words_ids: Optional[Iterable[int]] = None,
         bos_token_id: Optional[int] = None,
@@ -273,6 +274,7 @@ def generate_text_from_recalibrated_model(
                                           do_sample=do_sample, temperature=temperature, top_k=top_k, top_p=top_p,
                                           epsilon=epsilon,
                                           eta=eta,
+                                          typ=typ,
                                           repetition_penalty=repetition_penalty,
                                           no_repeat_ngram_size=no_repeat_ngram_size, bad_words_ids=bad_words_ids,
                                           pad_token_id=pad_token_id, eos_token_id=eos_token_id,
@@ -287,6 +289,7 @@ def _generate_no_beam_search(model, input_ids,
                              temperature, top_k, top_p,
                              epsilon,
                              eta,
+                             typ,
                              repetition_penalty, no_repeat_ngram_size, bad_words_ids,
                              pad_token_id, eos_token_id, batch_size, attention_mask, use_cache, model_kwargs):
     """Generate sequences for each example without beam search (num_beams == 1).
@@ -336,6 +339,7 @@ def _generate_no_beam_search(model, input_ids,
                 scores,
                 top_k=top_k, top_p=top_p,
                 epsilon=epsilon,
+                typ=typ,
                 eta=eta)
             # Sample
             probs = F.softmax(next_token_logscores, dim=-1)
@@ -387,13 +391,13 @@ def get_default_batch_size(model_name, device, beam_size=1):
     twelve_gigs = 11719409664
 
     if 'gpt2-large' in model_name:
-        default_batch_size = 8
+        default_batch_size = 10
     elif 'gpt2-xl' in model_name:
-        default_batch_size = 2
+        default_batch_size = 7
     elif 'gpt2-medium' in model_name:
         default_batch_size = 20
     elif 'gpt2' in model_name:
-        default_batch_size = 20
+        default_batch_size = 35
     else:
         # default_batch_size = 1
         raise ValueError(f'Unknown model {model_name}')
@@ -402,6 +406,7 @@ def get_default_batch_size(model_name, device, beam_size=1):
     else:
         mem = torch.cuda.get_device_properties(device).total_memory
         bsz = int(mem / twelve_gigs * max(1, default_batch_size / beam_size))
+        print('batch', bsz)
         bsz = max(1, bsz)
     return bsz
 
@@ -409,12 +414,13 @@ def create_sample_fn(model, max_len,
                      top_p=1.0, top_k=0, temperature=1.0,
                      epsilon=0.0,
                      eta=0.0,
+                     typ=1.0,
                      return_predicted_p=False):
     # recalib_fn is applied after top-p/top-k/temp modifications
     fn = lambda prompt: generate_text_from_recalibrated_model(
         model, input_ids=prompt,
         max_length=max_len, do_sample=True, temperature=temperature, top_k=top_k, top_p=top_p,
-        epsilon=epsilon, eta=eta)
+        epsilon=epsilon, eta=eta, typ=typ)
     return fn
 
 def remove_eos_from_samples(samples, eos_token_id):

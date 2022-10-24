@@ -154,13 +154,13 @@ args=${list_of_jobs[${job_id}]}
 
 echo ${args}
 
-time python -u generate_basic.py ${args} \
+echo "time python -u generate_basic.py ${args} \
   --device 0 \
   --ds_name webtext \
   --datasplit ${datasplit} \
   --data_dir ${data_dir} \
   --model_name ${model_name} \
   --prompt_size ${prompt_size} \
-  --use_large_feats
+  --use_large_feats"
 
 echo "Job completed at $(date)"
