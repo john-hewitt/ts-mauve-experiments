@@ -23,12 +23,25 @@ year = {2021},
 
 ## Running val-set experiments and choosing hyperparameters
 
-We choose hyperparameters for each method on the WebText validation set. You can
+We choose hyperparameters for each method on the WebText validation set. You should
 download it (and do other prep for the repository) with the instructions provided
-in the original README, kept verbatim below.
+in the original README, kept verbatim below, before you run these commands.
+One thing to note that we noticed didn't work in the original prep is that the folders
+
+```
+outputs/webtext_gpt2/generations/ref/
+outputs/webtext_gpt2-medium/generations/ref/
+outputs/webtext_gpt2-large/generations/ref/
+outputs/webtext_gpt2-xl/generations/ref/
+```
+
+should all have files with names like `featsL1024_test.pt`, for evaluation to work properly;
+I think the prep only puts them in the `gpt2` folder. Copying the identical reference files
+to all the locations (for validation and for test) worked.
 
 In these and the test experiments, you'll probably want to parallelize these across
 e.g., slurm jobs instead of running them serially.
+
 
 You can then make the MAUVE scores by running `local_scripts/webtext/eta_mauve_metrics_kmeans.sh`.
 
