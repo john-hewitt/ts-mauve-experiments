@@ -23,12 +23,29 @@ year = {2021},
 
 ## Running val-set experiments and choosing hyperparameters
 
-We choose hyperparameters for each method on the WebText validation set. You can
+We choose hyperparameters for each method on the WebText validation set. You should
 download it (and do other prep for the repository) with the instructions provided
-in the original README, kept verbatim below.
+in the original README, kept verbatim below, before you run these commands.
+One thing to note that we noticed didn't work in the original prep is that the folders
+
+```
+outputs/webtext_gpt2/generations/ref/
+outputs/webtext_gpt2-medium/generations/ref/
+outputs/webtext_gpt2-large/generations/ref/
+outputs/webtext_gpt2-xl/generations/ref/
+```
+
+should all have files with names like `featsL1024_test.pt`, for evaluation to work properly;
+I think the prep only puts them in the `gpt2` folder. Copying the identical reference files
+to all the locations (for validation and for test) worked.
 
 In these and the test experiments, you'll probably want to parallelize these across
 e.g., slurm jobs instead of running them serially.
+
+
+You can then make the MAUVE scores by running `local_scripts/webtext/eta_mauve_metrics_kmeans.sh`.
+
+Once the MAUVE scores are written, run `report.py` to get a breakdown.
 ```
 model_name=gpt2 # Choose between {gpt2,gpt2-medium,gpt2-large,gpt2-xl}
 
@@ -68,6 +85,9 @@ done
 ## Running test-set experiments 
 These test set scripts use the best-performing hyperparameters for each method for each model size.
 
+You can then make the MAUVE scores by running `local_scripts/webtext/test_mauve_metrics_kmeans.sh`.
+
+Once the MAUVE scores are written, run `report.py --test 1` to get a breakdown.
 ```
 # small
 for seed in 1 2 3 4 5; do
