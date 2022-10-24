@@ -12,10 +12,12 @@ model_sizes = ('', '-medium', '-large', '-xl')
 top_p_hyps = (0.89, 0.9, 0.92, 0.95, 0.99)
 epsilon_hyps = (0.001, 0.0009, 0.0006, 0.0003, 0.0001)
 eta_hyps = (0.004, 0.002, 0.0009, 0.0006, 0.0003)
+typ_hyps = (0.9, 0.92, 0.95, 0.2)
 
 top_p_seeds_valid = (1, 2, 3, 4, 5)
 epsilon_seeds_valid = (1, 2, 3, 4, 5)
 eta_seeds_valid = (200, 201, 202, 203, 204, 1, 2, 3, 4, 5)
+typ_seeds_valid = (0, 1, 2, 3, 4, 5)
 
 lengths = (128, 256, 512, 1024)
 
@@ -34,6 +36,8 @@ def results_helper(hyps, seeds, typ):
           resolved_path = path.format(model_size, length, 1.0, hyp, 0.0, seed)
         elif typ == 'h':
           resolved_path = path.format(model_size, length, 1.0, 0.0, hyp, seed)
+        elif typ == 't':
+          resolved_path = path.format(model_size, length, 1.0, 0.0, 0.0, seed).replace('h0.0', 'h0.0_typ{}'.format(hyp))
         result = pickle.load(open(resolved_path, 'rb'))[0]
         results[hyp].append(result)
         #print(typ, hyp, seed)
@@ -55,22 +59,27 @@ for model_size in model_sizes:
         top_p_hyps = (0.9,)
         eta_hyps = (0.002,)
         epsilon_hyps = (0.0006,)
+        typ_hyps = (0.9,)
       if model_size == '-medium':
         top_p_hyps = (0.89,)
         eta_hyps = (0.002,)
         epsilon_hyps = (0.0009,)
+        typ_hyps = (0.9,)
       if model_size == '-large':
         top_p_hyps = (0.95,)
         eta_hyps = (0.0006,)
         epsilon_hyps = (0.0003,)
+        typ_hyps = (0.92,)
       if model_size == '-xl':
         top_p_hyps = (0.95,)
         eta_hyps = (0.0003,)
         epsilon_hyps = (0.0003,)
+        typ_hyps = (0.92,)
     print()
     print(model_size if model_size != '' else 'small', length)
     results_helper(top_p_hyps, top_p_seeds_valid,  'p')
     results_helper(epsilon_hyps, epsilon_seeds_valid, 'e')
     results_helper(eta_hyps, eta_seeds_valid, 'h')
+    results_helper(typ_hyps, typ_seeds_valid, 't')
 
 
