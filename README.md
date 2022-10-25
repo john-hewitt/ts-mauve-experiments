@@ -9,6 +9,8 @@ as well.
 For the rest of the code for the _Trucation Sampling_ paper, please see our
 [github repo](https://github.com/john-hewitt/truncation-sampling).
 
+
+
 Of course, if you use this repository, cite the original authors. Only cite the
 _Truncation Sampling_ paper if you use the new methods presented in it.
 
@@ -21,6 +23,32 @@ year = {2021},
 }
 ```
 
+## Taking a look at the results
+
+If you just want to take a look at the MAUVE scores or the generated text from all methods,
+we've kept it all, from both validation and testing! In the directory `cached_outputs`, you'll
+see four files: `test-generations.json.zip`, `test-mauves.json`, `valid-generations.json.zip`,
+`test-mauves.json`. The zipped generation files total almost 800MB and are stored with github
+large file storage.
+
+Each `generations` json file is a dictionary of the following form
+```
+	{
+		str((method, hyperparameter, seed)):
+			[
+				[...] # List of generated strings
+				[...] # List of completion booleans
+			],
+		...
+	}
+```
+While each `mauves` json file is a dictionary of the following form
+```
+	{
+		str((method, hyperparameter, seed)): mauve_score # scalar
+		...
+	}
+```
 ## Running val-set experiments and choosing hyperparameters
 
 We choose hyperparameters for each method on the WebText validation set. You should
