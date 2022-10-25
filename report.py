@@ -1,6 +1,8 @@
 import pickle
 import argparse
 import numpy as np
+import json
+from collections import defaultdict
 
 argp = argparse.ArgumentParser()
 argp.add_argument('--just_best', default=None)
@@ -24,6 +26,10 @@ lengths = (128, 256, 512, 1024)
 
 path = 'outputs/webtext_gpt2{}/metrics/basic/mauve_L{}_valid_p{}_k0_t1.0_e{}_h{}_seed{}_kmeans_l2_500_0.9.p'
 
+generation_path = 'outputs/webtext_gpt2{}/generations/basic/sentences_valid_p{}_k0_t1.0_e{}_h{}_seed{}.p'
+
+generations = {}
+mauves = {}
 
 def results_helper(hyps, seeds, typ):
   results = {hyp: [] for hyp in hyps}
@@ -32,13 +38,20 @@ def results_helper(hyps, seeds, typ):
       try:
         if typ == 'p':
           resolved_path = path.format(model_size, length, hyp, 0.0, 0.0, seed)
+          resolved_generation_path = generation_path.format(model_size, hyp, 0.0, 0.0, seed)
         elif  typ == 'e':
           resolved_path = path.format(model_size, length, 1.0, hyp, 0.0, seed)
+          resolved_generation_path = generation_path.format(model_size, 1.0, hyp, 0.0, seed)
         elif typ == 'h':
           resolved_path = path.format(model_size, length, 1.0, 0.0, hyp, seed)
+          resolved_generation_path = generation_path.format(model_size, 1.0, 0.0, hyp, seed)
         elif typ == 't':
           resolved_path = path.format(model_size, length, 1.0, 0.0, 0.0, seed).replace('h0.0', 'h0.0_typ{}'.format(hyp))
+          resolved_generation_path = generation_path.format(model_size, 1.0, 0.0, 0.0, seed).replace('h0.0', 'h0.0_typ{}'.format(hyp))
         result = pickle.load(open(resolved_path, 'rb'))[0]
+        generation = pickle.load(open(resolved_generation_path, 'rb'))
+        generations[str((typ, hyp, seed))] = generation
+        mauves[str((typ, hyp, seed))] = result
         results[hyp].append(result)
         #print(typ, hyp, seed)
       except:
@@ -55,6 +68,7 @@ for model_size in model_sizes:
   for length in lengths:
     if args.test:
       path = 'outputs/webtext_gpt2{}/metrics/basic/mauve_L{}_test_p{}_k0_t1.0_e{}_h{}_seed{}_kmeans_l2_500_0.9.p'
+      generation_path = 'outputs/webtext_gpt2{}/generations/basic/sentences_test_p{}_k0_t1.0_e{}_h{}_seed{}.p'
       if model_size == '':
         top_p_hyps = (0.9,)
         eta_hyps = (0.002,)
@@ -82,4 +96,8 @@ for model_size in model_sizes:
     results_helper(eta_hyps, eta_seeds_valid, 'h')
     results_helper(typ_hyps, typ_seeds_valid, 't')
 
+with open('generations.json', 'w') as fout:
+  json.dump(generations, fout)
 
+with open('mauves.json', 'w') as fout:
+  json.dump(mauves, fout)
