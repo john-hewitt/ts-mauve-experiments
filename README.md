@@ -42,6 +42,8 @@ Each `generations` json file is a dictionary of the following form
 		...
 	}
 ```
+where the `method` mapping is `p`: top-p, `e`: epsilon, `h`: eta, `t`: typical.
+
 While each `mauves` json file is a dictionary of the following form
 ```
 	{
