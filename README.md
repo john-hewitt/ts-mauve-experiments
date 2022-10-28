@@ -1,7 +1,7 @@
 # MAUVE experiments for the Truncation Sampling paper
 
 This repository documents the MAUVE experiments in [_Truncation Sampling
-as Language Model Desmoothing_](https://github.com). Minimal changes have been made to the original
+as Language Model Desmoothing_](https://arxiv.org/pdf/2210.15191.pdf). Minimal changes have been made to the original
 MAUVE experiments repository to add epsilon sampling, eta sampling, and typical
 decoding. A few scripts are provided for running the set of experiments we ran
 as well.
